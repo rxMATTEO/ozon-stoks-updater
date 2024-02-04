@@ -4,11 +4,7 @@ const app = express();
 const {writeFileSync, readFileSync} = require("fs");
 const fs = require('fs');
 const axios = require('axios');
-
-const OZON_API_KEY = '13151367-37ca-4475-be2e-9734ed77969d';
-const OZON_CLIENT_ID = '1677349';
-
-const LTM_API_KEY = 'i47Of3FdUm9RaV8DB232';
+const {  OZON_API_KEY, OZON_CLIENT_ID, LTM_API_KEY} = require('dotenv').config().parsed;
 
 app.use(cors());
 app.use(express.static('dist'));
@@ -109,16 +105,16 @@ async function postStocks(ozonWarehouses, bothSidesArray){
     }
     return i;
   }).filter(i => i.stock > 0);
-  // const result = await axios.post('https://api-seller.ozon.ru/v2/products/stocks', {
-  //   stocks: stocks.slice(0, 100),
-  // }, {
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Client-Id': OZON_CLIENT_ID,
-  //     'Api-Key': OZON_API_KEY
-  //   }
-  // });
-  // return result.data;
+  const result = await axios.post('https://api-seller.ozon.ru/v2/products/stocks', {
+    stocks: stocks.slice(0, 100),
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Client-Id': OZON_CLIENT_ID,
+      'Api-Key': OZON_API_KEY
+    }
+  });
+  return result.data;
 }
 
 async function matchBothSides(ozonList){
@@ -133,7 +129,6 @@ async function matchBothSides(ozonList){
       });
     }
   }
-  console.log(JSON.stringify(result))
   return result;
 }
 
