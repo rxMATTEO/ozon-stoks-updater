@@ -4,7 +4,7 @@ const app = express();
 const {writeFileSync, readFileSync} = require("fs");
 const fs = require('fs');
 const axios = require('axios');
-const {  OZON_API_KEY, OZON_CLIENT_ID, LTM_API_KEY} = require('dotenv').config().parsed;
+const {OZON_API_KEY, OZON_CLIENT_ID, LTM_API_KEY} = require('dotenv').config().parsed;
 
 app.use(cors());
 app.use(express.static('dist'));
@@ -17,20 +17,20 @@ const ltmItems = async (page) => await axios.get(`https://ltm-music.ru/api/produ
 });
 
 async function getLtmList() {
-  const { data: listFirst } = await ltmItems(1);
-  const pages = listFirst.page_count;
+  const {data: listFirst} = await ltmItems(1);
+  const pages = listFirst.nav.page_count;
   const list = [...listFirst.products];
   for (let i = 2; i <= pages; i++) {
     const newList = await ltmItems(i);
-    list.push(...newList)
+    list.push(...newList.data.products)
   }
   return list;
 }
 
-async function findLtmBuyArt(art, list){
+async function findLtmBuyArt(art, list) {
   for (const item of list) {
     for (const offer of item.offers) {
-      if(offer.bar_code == art){
+      if (offer.bar_code == art) {
         return offer;
       }
 
@@ -39,8 +39,8 @@ async function findLtmBuyArt(art, list){
   // return list.find(el => el.offers.find(offer => offer.bar_code == art));
 }
 
-async function getOzonList(){
-  const ozonList = await axios.post('https://api-seller.ozon.ru/v2/product/list',{
+async function getOzonList() {
+  const ozonList = await axios.post('https://api-seller.ozon.ru/v2/product/list', {
     limit: 9999
   }, {
     headers: {
@@ -52,7 +52,7 @@ async function getOzonList(){
   return ozonList.data.result.items;
 }
 
-async function getOzonWarehouses(){
+async function getOzonWarehouses() {
 //   POST https://api-seller.ozon.ru/v1/warehouse/list
 // Content-Type: application/json
 // Client-Id: 1677349
@@ -72,7 +72,7 @@ async function getOzonWarehouses(){
   return warehousesHuman;
 }
 
-async function postStocks(ozonWarehouses, bothSidesArray){
+async function postStocks(ozonWarehouses, bothSidesArray) {
   // POST https://api-seller.ozon.ru/v2/products/stocks
   // Content-Type: application/json
   // Client-Id: 1677349
@@ -100,24 +100,32 @@ async function postStocks(ozonWarehouses, bothSidesArray){
       },
     ]
   }).flat().map(i => {
-    if(i.stock > 100){
+    if (i.stock > 100) {
       i.stock = 100;
     }
     return i;
-  }).filter(i => i.stock > 0);
-  const result = await axios.post('https://api-seller.ozon.ru/v2/products/stocks', {
-    stocks: stocks.slice(0, 100),
-  }, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Client-Id': OZON_CLIENT_ID,
-      'Api-Key': OZON_API_KEY
-    }
-  });
-  return result.data;
+  })
+  const requestsCount = Math.ceil(stocks.length / 100);
+  for (let i = 0; i < requestsCount; i++) {
+    setTimeout(async () => {
+      console.log('on it');
+      const result = await axios.post('https://api-seller.ozon.ru/v2/products/stocks', {
+        stocks: stocks.slice(i * 100, (i + 1) * 100),
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Client-Id': OZON_CLIENT_ID,
+          'Api-Key': OZON_API_KEY
+        }
+      });
+      console.log(result.data)
+      console.log(i === requestsCount - 1 ? 'DONE' : 'not done');
+      return result.data;
+    }, i * 126000);
+  }
 }
 
-async function matchBothSides(ozonList){
+async function matchBothSides(ozonList) {
   const result = [];
   const ltmList = await getLtmList();
   for (const resultElement of ozonList) {
