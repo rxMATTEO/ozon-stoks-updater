@@ -115,7 +115,7 @@ async function postStocks(ozonWarehouses, bothSidesArray) {
         }
       });
       console.log(result.data)
-      console.log(i === requestsCount - 1 ? 'DONE' : 'not done');
+      console.log(i === requestsCount - 1 ? 'DONE' : `not done ${i} of ${requestsCount - 1}`);
       return result.data;
     }, i * 126000);
   }
@@ -137,7 +137,6 @@ async function matchBothSides(ozonList) {
 }
 
 app.get('/', async (req, res) => {
-  // const ltmList = await findLtmBuyArt(522070);
   const ozonList = await getOzonList();
   const bothSidesArray = await matchBothSides(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
