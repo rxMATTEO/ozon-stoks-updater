@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require("cors");
 const app = express();
-const {writeFileSync, readFileSync} = require("fs");
-const fs = require('fs');
 const axios = require('axios');
 const {OZON_API_KEY, OZON_CLIENT_ID, LTM_API_KEY} = require('dotenv').config().parsed;
 
@@ -14,6 +12,17 @@ const ltmItems = async (page) => await axios.get(`https://ltm-music.ru/api/produ
   headers: {
     Authorization: LTM_API_KEY
   }
+});
+
+const ozonListItems = async (lastId) => await axios.post('https://api-seller.ozon.ru/v2/product/list', {
+  limit: 1000,
+  last_id: lastId
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'Client-Id': OZON_CLIENT_ID,
+    'Api-Key': OZON_API_KEY
+  },
 });
 
 async function getLtmList() {
@@ -40,23 +49,21 @@ async function findLtmBuyArt(art, list) {
 }
 
 async function getOzonList() {
-  const ozonList = await axios.post('https://api-seller.ozon.ru/v2/product/list', {
-    limit: 9999
-  }, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Client-Id': OZON_CLIENT_ID,
-      'Api-Key': OZON_API_KEY
-    },
-  });
-  return ozonList.data.result.items;
+  const ozonList = await ozonListItems(null);
+  const list = [...ozonList.data.result.items];
+  const limit = ozonList.data.result.total;
+  const pages = Math.ceil(limit / 1000);
+  let lastId = ozonList.data.result.last_id;
+  for (let i = 2; i <= pages; i++) {
+    const newList = await ozonListItems(lastId);
+    lastId = ozonList.data.result.last_id;
+    list.push(...newList.data.result.items)
+  }
+  return list;
 }
 
 async function getOzonWarehouses() {
 //   POST https://api-seller.ozon.ru/v1/warehouse/list
-// Content-Type: application/json
-// Client-Id: 1677349
-// Api-Key:13151367-37ca-4475-be2e-9734ed77969d
   const ozonWarehouses = (await axios.post('https://api-seller.ozon.ru/v1/warehouse/list', {}, {
     headers: {
       'Content-Type': 'application/json',
@@ -74,17 +81,6 @@ async function getOzonWarehouses() {
 
 async function postStocks(ozonWarehouses, bothSidesArray) {
   // POST https://api-seller.ozon.ru/v2/products/stocks
-  // Content-Type: application/json
-  // Client-Id: 1677349
-  // Api-Key:13151367-37ca-4475-be2e-9734ed77969d
-  // "stocks": [
-  //   {
-  //     "offer_id": "425188",
-  //     "product_id": 866646461,
-  //     "stock": 0,
-  //     "warehouse_id": 1020001325880000
-  //   }
-  // ]
   const stocks = bothSidesArray.map(i => {
     return [{
       offer_id: i.ozon.offer_id,
