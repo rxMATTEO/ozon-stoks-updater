@@ -168,14 +168,45 @@ async function findOzonCategory(ozonCats: Category[], items: ProductDyna) {
   return ozonCats.find(cat => cat.children.find(i => i.children.find(i => {
     console.log(i.type_name, fetchInfo.product_type);
     i.type_name.includes(fetchInfo.product_type)
-  } )));
+  })));
+}
+
+async function postOzonItems(dynaItems: ProductDyna[]) {
+  // POST https://api-seller.ozon.ru/v2/products/stocks
+  return (await axios.post('https://api-seller.ozon.ru/v3/product/import', {
+    items: [
+      {
+        barcode: '19954500153',
+        dimension_unit: 'cm',
+        height: 2,
+        "images": [
+          "https://cdn.liveimg.ru/img/cache/crp/11291_46870~sz89983.jpg",
+          "https://cdn.liveimg.ru/img/cache/crp/11291_46871~sz237961.jpg"
+        ],
+        name: 'EVANS TT10G1 - Пластик 10"',
+        offer_id: 'DNT-11291',
+        price: '2310',
+        vat: '0',
+        weight_unit: 'g',
+        weight: 136,
+        width: 27,
+      }
+    ]
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Client-Id': OZON_CLIENT_ID,
+      'Api-Key': OZON_API_KEY
+    }
+  })).data;
 }
 
 app.get('/api/upload/apidnt', async (req, res) => {
-  const categories = await fetchOzonCategories();
+  // const categories = await fetchOzonCategories();
+  // const dynaCat = await findOzonCategory(categories, items.product[0]);
   const items = await fetchDynatoneItems();
-  const dynaCat = await findOzonCategory(categories, items.product[0]);
-  res.send(categories);
+  const postedItems = await postOzonItems(items.product);
+  res.send(postedItems);
 })
 
 console.log('listening on port 3001');
