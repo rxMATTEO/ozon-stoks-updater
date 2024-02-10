@@ -1,3 +1,5 @@
+import {Category, DynaItem, ProductDyna} from "./types";
+
 const express = require('express');
 const cors = require("cors");
 const app = express();
@@ -143,7 +145,7 @@ app.get('/api/update/ltm', async (req, res) => {
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
 });
 
-async function fetchOzonCategories(){
+async function fetchOzonCategories() {
   return (await axios.post('https://api-seller.ozon.ru/v1/description-category/tree', {}, {
     headers: {
       'Content-Type': 'application/json',
@@ -153,22 +155,26 @@ async function fetchOzonCategories(){
   })).data.result;
 }
 
-async function fetchDynatoneItems(){
-  return axios.get('https://apidnt.ru/v2/product/list?key=20EABd8c-2594-1028-524C-2D91-E3E582F4Ae58&fields=name,barcode,brand&limit=10&start=50');
+async function fetchDynatoneItems(): Promise<{ product: ProductDyna[] }> {
+  return (await axios.get('https://apidnt.ru/v2/product/list?key=20EABd8c-2594-1028-524C-2D91-E3E582F4Ae58&fields=name,barcode,brand&limit=10&start=50')).data;
 }
 
-async function fetchDynaInfo(item){
-  return axios.get(`https://apidnt.ru/v2/product/info/?key=20EABd8c-2594-1028-524C-2D91-E3E582F4Ae58&product_id=${item.product_id}&add_video=1&add_parameters=1`);
+async function fetchDynaInfo(item: ProductDyna): Promise<DynaItem> {
+  return (await axios.get(`https://apidnt.ru/v2/product/info/?key=20EABd8c-2594-1028-524C-2D91-E3E582F4Ae58&product_id=${item.product_id}&add_video=1&add_parameters=1`)).data;
 }
 
-async function findOzonCategory(ozonCats, items){
-  const fetchInfo = await axios.get();
-  return ozonCats.find( cat => cat.children.find( i => i['type_name'].includes( items ) ) );
+async function findOzonCategory(ozonCats: Category[], items: ProductDyna) {
+  const fetchInfo = await fetchDynaInfo(items);
+  return ozonCats.find(cat => cat.children.find(i => i.children.find(i => {
+    console.log(i.type_name, fetchInfo.product_type);
+    i.type_name.includes(fetchInfo.product_type)
+  } )));
 }
 
 app.get('/api/upload/apidnt', async (req, res) => {
   const categories = await fetchOzonCategories();
-  // const items = await fetchDynatoneItems();
+  const items = await fetchDynatoneItems();
+  const dynaCat = await findOzonCategory(categories, items.product[0]);
   res.send(categories);
 })
 
