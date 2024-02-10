@@ -136,7 +136,7 @@ async function matchBothSides(ozonList) {
   return result;
 }
 
-app.get('/', async (req, res) => {
+app.get('/api/update/ltm', async (req, res) => {
   const ozonList = await getOzonList();
   const bothSidesArray = await matchBothSides(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
