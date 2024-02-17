@@ -176,20 +176,164 @@ async function postOzonItems(dynaItems: ProductDyna[]) {
   return (await axios.post('https://api-seller.ozon.ru/v3/product/import', {
     items: [
       {
-        barcode: '19954500153',
+        barcode: '7331321105208',
         dimension_unit: 'cm',
         height: 2,
         "images": [
-          "https://cdn.liveimg.ru/img/cache/crp/11291_46870~sz89983.jpg",
-          "https://cdn.liveimg.ru/img/cache/crp/11291_46871~sz237961.jpg"
+          'https://cdn.liveimg.ru/img/cache/crp/10266__1~sz455453.jpg'
         ],
-        name: 'EVANS TT10G1 - Пластик 10"',
-        offer_id: 'DNT-11291',
+        primary_image: 'https://cdn.liveimg.ru/img/cache/crp/10266__1~sz455453.jpg',
+        name: 'ELIXIR 11052 - Струны для акустической гитары',
+        offer_id: 'DNT-10267',
         price: '2310',
         vat: '0',
         weight_unit: 'g',
         weight: 136,
         width: 27,
+        depth: 130,
+        "description_category_id": 57185538,
+        "attributes": [
+          {
+            "attribute_id": 85,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 970801718,
+                "value": "ELIXIR"
+              }
+            ]
+          },
+          {
+            "attribute_id": 8229,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 970987978,
+                "value": "Световой сценический прибор"
+              }
+            ]
+          },
+          {
+            "attribute_id": 9048,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "ELIXIR"
+              }
+            ]
+          },
+          {
+            "attribute_id": 4180,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "ELIXIR 11052 - Струны для акустической гитары"
+              }
+            ]
+          },
+          {
+            "attribute_id": 4191,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "<p>Струны Elixir 11052 c покрытием NanoWeb</p>\r\n<p>Технические характеристики:</p>\r\n<ul>\r\n<li>Струны для акустической гитары</li>\r\n<li>Обмотка: бронза 80/20</li>\r\n<li>Размeры: 012-016-024w-032w-042w-053w</li>\r\n<li>Натяжение: Light</li>\r\n<li>Покрытие: NanoWeb</li>\r\n<li>Anti-Rust</li>\r\n<li>Страна-производитель: США</li>\r\n</ul>\n\n<br><ul><li>Размер - 4/4</li>\n<li>Калибр первой струны - 12</li>\n<li>Количество струн - 6</li>\n<li>Метериал сердечника - сталь</li>\n<li>Материал оплетки - бронза</li>\n<li>Серия - ELIXIR Nanoweb</li>\n<li>Страна происхождения - СОЕДИНЕННЫЕ ШТАТЫ</li>\n<li>Натяжение - Слабое</li>\n<li>Полимерное покрытие - Да</li>\n<li>Форма оплетки - круглая</li>\n<li>Форма сердечника - гексогональный</li></ul>\n\n<br>"
+              }
+            ]
+          },
+          {
+            "attribute_id": 10096,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 61607,
+                "value": "черный"
+              }
+            ]
+          },
+          {
+            "attribute_id": 4383,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "1500"
+              }
+            ]
+          },
+          {
+            "attribute_id": 4385,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "1 год"
+              }
+            ]
+          },
+          {
+            "attribute_id": 11650,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "attribute_id": 6317,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 1896,
+                "value": "Светодиодная"
+              }
+            ]
+          },
+          {
+            "attribute_id": 22814,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 971917204,
+                "value": "Серый"
+              }
+            ]
+          },
+          {
+            "attribute_id": 4389,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 90296,
+                "value": "Китай"
+              }
+            ]
+          },
+          {
+            "attribute_id": 4384,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "Светодиодный прожектор"
+              }
+            ]
+          },
+          {
+            "attribute_id": 6319,
+            "complex_id": 0,
+            "values": [
+              {
+                "dictionary_value_id": 0,
+                "value": "60"
+              }
+            ]
+          },
+        ],
       }
     ]
   }, {
