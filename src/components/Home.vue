@@ -2,9 +2,12 @@
 import {computed, inject, ref} from "vue";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
+import {useToast} from "primevue/usetoast";
+const toast = useToast();
 
 const apiUrl = inject('apiUrl');
 const ozonItems = ref([]);
+const updatedOzonItems = ref([]);
 
 async function getOzonList() {
   ozonItems.value = (await axios.get(`${apiUrl}/ozon-list`)).data;
@@ -17,8 +20,9 @@ async function updateOzonList() {
 }
 const socket: Socket = io('http://localhost:3001');
 socket.emit('connection');
-socket.on('ozonUpdate', (data) => {
-  console.log(data)
+socket.on('ozonUpdate', ({result}) => {
+  updatedOzonItems.value.push(...result);
+  toast.add({severity: 'success', summary: 'Успех!', detail: `Обновлено ${result.length} записей`});
 });
 
 const columns = computed(() => {
