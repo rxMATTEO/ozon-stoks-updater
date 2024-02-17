@@ -1,6 +1,7 @@
 import {Category, DynaItem, ProductDyna} from "./types";
 import {Server} from "socket.io";
 import {clearTimeout} from "node:timers";
+import * as path from "node:path";
 
 const express = require('express');
 const cors = require("cors");
@@ -107,12 +108,12 @@ async function postStocks(ozonWarehouses, bothSidesArray) {
       stock: i.ltm.stores.find(i => i.code === 'moscow').quantity,
       warehouse_id: ozonWarehouses.msk.warehouse_id
     },
-      {
-        offer_id: i.ozon.offer_id,
-        product_id: i.ozon.product_id,
-        stock: i.ltm.stores.find(i => i.code === 'novosibirsk').quantity,
-        warehouse_id: ozonWarehouses.nsb.warehouse_id
-      },
+      // {
+      //   offer_id: i.ozon.offer_id,
+      //   product_id: i.ozon.product_id,
+      //   stock: i.ltm.stores.find(i => i.code === 'novosibirsk').quantity,
+      //   warehouse_id: ozonWarehouses.nsb.warehouse_id
+      // },
     ]
   }).flat().map(i => {
     if (i.stock > 100) {
@@ -375,7 +376,14 @@ app.get('/api/upload/apidnt', async (req, res) => {
   const items = await fetchDynatoneItems();
   const postedItems = await postOzonItems(items.product);
   res.send(postedItems);
-})
+});
+
+app.get('*', (req, res) => {
+  res.headers({
+    'Content-Type': 'text/html',
+  })
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 console.log('listening on port 3001');
 server.listen(3001);
