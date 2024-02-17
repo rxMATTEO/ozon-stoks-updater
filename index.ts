@@ -138,8 +138,13 @@ async function matchBothSides(ozonList) {
   return result;
 }
 
-app.get('/api/update/ltm', async (req, res) => {
+app.get('/api/ozon-list', async (req, res) => {
   const ozonList = await getOzonList();
+  res.send(ozonList);
+});
+
+app.post('/api/update/ltm', async (req, res) => {
+  const { ozonList } = req.body;
   const bothSidesArray = await matchBothSides(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
