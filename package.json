@@ -18,10 +18,12 @@
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "nodemon": "^3.0.3",
-    "vue": "^3.4.15",
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
     "primevue": "^3.44.0",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4",
+    "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

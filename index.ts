@@ -1,10 +1,27 @@
 import {Category, DynaItem, ProductDyna} from "./types";
+import {Server} from "socket.io";
+import {clearTimeout} from "node:timers";
 
 const express = require('express');
 const cors = require("cors");
 const app = express();
 const axios = require('axios');
 const {OZON_API_KEY, OZON_CLIENT_ID, LTM_API_KEY} = require('dotenv').config().parsed;
+const http = require('http');
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000/',
+  }
+});
+const intervalId = [];
+
+io.on('connection', (socket) => {
+  console.log('client socket connected');
+  socket.on('stop', () => {
+    intervalId.forEach(i => clearTimeout(i));
+  });
+});
 
 app.use(cors());
 app.use(express.static('dist'));
@@ -105,7 +122,7 @@ async function postStocks(ozonWarehouses, bothSidesArray) {
   })
   const requestsCount = Math.ceil(stocks.length / 100);
   for (let i = 0; i < requestsCount; i++) {
-    setTimeout(async () => {
+    const timeoutId = setTimeout(async () => {
       console.log('on it');
       const result = await axios.post('https://api-seller.ozon.ru/v2/products/stocks', {
         stocks: stocks.slice(i * 100, (i + 1) * 100),
@@ -118,8 +135,10 @@ async function postStocks(ozonWarehouses, bothSidesArray) {
       });
       console.log(result.data)
       console.log(i === requestsCount - 1 ? 'DONE' : `not done ${i} of ${requestsCount - 1}`);
+      io.emit('ozonUpdate', result.data);
       return result.data;
     }, i * 126000);
+    intervalId.push(timeoutId);
   }
 }
 
@@ -144,7 +163,7 @@ app.get('/api/ozon-list', async (req, res) => {
 });
 
 app.post('/api/update/ltm', async (req, res) => {
-  const { ozonList } = req.body;
+  const {ozonList} = req.body;
   const bothSidesArray = await matchBothSides(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
