@@ -11,7 +11,7 @@ const http = require('http');
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000/',
+    origin: 'http://localhost:3000',
   }
 });
 const intervalId = [];
@@ -25,7 +25,7 @@ io.on('connection', (socket) => {
 
 app.use(cors());
 app.use(express.static('dist'));
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
 
 const ltmItems = async (page) => await axios.get(`https://ltm-music.ru/api/product/?limit=500&page=${page}`, {
   headers: {
@@ -378,4 +378,4 @@ app.get('/api/upload/apidnt', async (req, res) => {
 })
 
 console.log('listening on port 3001');
-app.listen(3001);
+server.listen(3001);
