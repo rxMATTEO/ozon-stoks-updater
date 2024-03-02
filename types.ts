@@ -71,8 +71,8 @@ export type DynaItem = {
   description: string;
 }
 
-type DynaItemResponse = {
-  result: string;
+export type DynaItemResponse = {
+  result: "OK" | 'error';
   items_total: number;
   items_now: number;
   start: number;

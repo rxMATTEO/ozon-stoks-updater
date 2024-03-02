@@ -1,4 +1,4 @@
-import {Category, DynaItem, ProductDyna} from "./types";
+import {Category, DynaItem, DynaItemResponse, ProductDyna} from "./types";
 import {Server} from "socket.io";
 import {clearTimeout} from "node:timers";
 import * as path from "node:path";
@@ -100,14 +100,18 @@ async function getOzonWarehouses() {
   return warehousesHuman;
 }
 
-async function postStocks(ozonWarehouses, bothSidesArray) {
+async function postStocks(ozonWarehouses, bothSidesArray,
+                          {
+                            getStocks = (item) => item.ltm.stores.find(i => i.code === 'moscow').quantity,
+                            getWarehouse = (ozonWarehouses) => ozonWarehouses.msk.warehouse_id
+                          } = {}) {
   // POST https://api-seller.ozon.ru/v2/products/stocks
   const stocks = bothSidesArray.map(i => {
     return [{
       offer_id: i.ozon.offer_id,
       product_id: i.ozon.product_id,
-      stock: i.ltm.stores.find(i => i.code === 'moscow').quantity,
-      warehouse_id: ozonWarehouses.msk.warehouse_id
+      stock: getStocks(i),
+      warehouse_id: getWarehouse(ozonWarehouses)
     },
       // {
       //   offer_id: i.ozon.offer_id,
@@ -171,15 +175,26 @@ app.post('/api/update/ltm', async (req, res) => {
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
 });
 
-async function getDynaItem(ozonId){
+async function getDynaItem(ozonId): Promise<DynaItemResponse> {
   return (await axios.get(`https://apidnt.ru/v2/product/list?product_id=DNT_${ozonId}&key=${DYNATON_API_KEY}`)).data;
 }
 
-async function getDynaList(ozonItems){
+async function getDynaList(ozonItems) {
   const list = [];
-  for (const item of ozonItems) {
+  const ozonItemsThatsDyna = ozonItems.filter(i => i.offer_id.length === 5);
+  for (const item of ozonItemsThatsDyna) {
     const dynaItem = await getDynaItem(item.offer_id);
+    if (dynaItem.result === 'OK') {
+      console.log(dynaItem.product[0].product_id)
+      list.push({
+        dyna: dynaItem.product[0],
+        ozon: item,
+      });
+    } else {
+      console.log('err', dynaItem.result)
+    }
   }
+  return list;
 }
 
 app.get('/api/upload/apidnt', async (req, res) => {
@@ -187,7 +202,13 @@ app.get('/api/upload/apidnt', async (req, res) => {
   // const dynaCat = await findOzonCategory(categories, items.product[0]);
   // const items = await fetchDynatoneItems();
   // const postedItems = await postOzonItems(items.product);
-  res.send(await getOzonWarehouses());
+  const ozonList = await getOzonList();
+  const dynaList = await getDynaList(ozonList);
+  const ozonWarehouses = await getOzonWarehouses();
+  res.send(postStocks(ozonWarehouses, dynaList, {
+    getWarehouse: (ozonWarehouses) => ozonWarehouses.dynaton.warehouse_id,
+    getStocks: (i) => i.dyna.stock_express,
+  }));
 });
 
 app.get('*', (req, res) => {
