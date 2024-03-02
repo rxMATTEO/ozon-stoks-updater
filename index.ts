@@ -185,6 +185,7 @@ async function getDynaList(ozonItems) {
   for (const item of ozonItemsThatsDyna) {
     const dynaItem = await getDynaItem(item.offer_id);
     if (dynaItem.result === 'OK') {
+      io.emit('dynaGet', dynaItem.product[0]);
       console.log(dynaItem.product[0].product_id, ' успешно получен из Динатона');
       list.push({
         dyna: dynaItem.product[0],
@@ -197,12 +198,12 @@ async function getDynaList(ozonItems) {
   return list;
 }
 
-app.get('/api/upload/apidnt', async (req, res) => {
+app.post('/api/update/apidnt', async (req, res) => {
   // const categories = await fetchOzonCategories();
   // const dynaCat = await findOzonCategory(categories, items.product[0]);
   // const items = await fetchDynatoneItems();
   // const postedItems = await postOzonItems(items.product);
-  const ozonList = await getOzonList();
+  const { ozonList } = req.body;
   const dynaList = await getDynaList(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
   res.send(postStocks(ozonWarehouses, dynaList, {

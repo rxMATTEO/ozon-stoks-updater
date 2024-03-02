@@ -15,8 +15,14 @@ async function getOzonList() {
   ozonItems.value = (await axios.get(`${apiUrl}/ozon-list`)).data;
 }
 
-async function updateOzonList() {
+async function updateLtmList() {
   return (await axios.post(`${apiUrl}/update/ltm`, {
+    ozonList: ozonItems.value
+  })).data;
+}
+
+async function updateDynatonList() {
+  return (await axios.post(`${apiUrl}/update/apidnt`, {
     ozonList: ozonItems.value
   })).data;
 }
@@ -26,6 +32,10 @@ socket.emit('connection');
 socket.on('ozonUpdate', ({result}) => {
   updatedOzonItems.value.push(...result);
   toast.add({severity: 'success', summary: 'Успех!', detail: `Обновлено ${result.length} записей`});
+});
+
+socket.on('dynaGet', ({product_id, stock_express}) => {
+  toast.add({severity: 'success', summary: 'Успех!', detail: `Товар ${product_id} в количестве ${stock_express} шт. успешно подтянулся из Динатона`, life: 3000});
 });
 
 const columns = computed(() => {
@@ -48,6 +58,21 @@ const rowsPerPage = computed(() => {
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
 });
+
+const buttons = [
+  {
+    label: 'Обновить остатки LTM',
+    command: () => {
+      updateLtmList();
+    }
+  },
+  {
+    label: 'Обновить остатки Dynaton',
+    command: () => {
+      updateDynatonList();
+    }
+  },
+]
 </script>
 
 <template>
@@ -55,8 +80,7 @@ const filters = ref({
   <div class="p-2" v-cloak>
     <div class="flex justify-content-between align-items-center">
       <Button icon="pi pi-cloud-download" label="Получить список товаров" @click="getOzonList"></Button>
-      <Button :disabled="!ozonItems.length" icon="pi pi-cloud-upload" label="Обновить остатки"
-              @click="updateOzonList"></Button>
+      <SplitButton :disabled="!ozonItems.length" icon="pi pi-cloud-upload" label="Обновить остатки у поставщика" :model="buttons"></SplitButton>
     </div>
     <div class="mt-3">
       <DataTable v-model:filters="filters" :value="ozonItems" selectionMode="single" paginator
