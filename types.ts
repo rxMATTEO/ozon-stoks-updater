@@ -70,3 +70,12 @@ export type DynaItem = {
   };
   description: string;
 }
+
+type DynaItemResponse = {
+  result: string;
+  items_total: number;
+  items_now: number;
+  start: number;
+  limit: number;
+  product: ProductDyna[];
+};

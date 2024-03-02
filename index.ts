@@ -171,6 +171,17 @@ app.post('/api/update/ltm', async (req, res) => {
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
 });
 
+async function getDynaItem(ozonId){
+  return (await axios.get(`https://apidnt.ru/v2/product/list?product_id=DNT_${ozonId}&key=${DYNATON_API_KEY}`)).data;
+}
+
+async function getDynaList(ozonItems){
+  const list = [];
+  for (const item of ozonItems) {
+    const dynaItem = await getDynaItem(item.offer_id);
+  }
+}
+
 app.get('/api/upload/apidnt', async (req, res) => {
   // const categories = await fetchOzonCategories();
   // const dynaCat = await findOzonCategory(categories, items.product[0]);
