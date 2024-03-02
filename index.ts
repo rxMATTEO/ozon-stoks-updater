@@ -185,13 +185,13 @@ async function getDynaList(ozonItems) {
   for (const item of ozonItemsThatsDyna) {
     const dynaItem = await getDynaItem(item.offer_id);
     if (dynaItem.result === 'OK') {
-      console.log(dynaItem.product[0].product_id)
+      console.log(dynaItem.product[0].product_id, ' успешно получен из Динатона');
       list.push({
         dyna: dynaItem.product[0],
         ozon: item,
       });
     } else {
-      console.log('err', dynaItem.result)
+      console.log('Ошибка для', dynaItem.result)
     }
   }
   return list;
