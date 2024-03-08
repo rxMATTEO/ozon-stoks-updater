@@ -241,8 +241,8 @@ function updatePrice(dynaList){
   }
 }
 
-app.get('/api/update/price/apidnt', async (req, res) => {
-  const ozonList = await getOzonList();
+app.post('/api/update/price/apidnt', async (req, res) => {
+  const { ozonList } = req.body;
   const dynaList = await getDynaList(ozonList);
   res.send(updatePrice(dynaList));
   // res.send(postStocks(ozonWarehouses, dynaList, {
