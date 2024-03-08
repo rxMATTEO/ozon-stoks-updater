@@ -182,7 +182,7 @@ async function getDynaItem(ozonId): Promise<DynaItemResponse> {
 async function getDynaList(ozonItems) {
   const list = [];
   const ozonItemsThatsDyna = ozonItems.filter(i => i.offer_id.length === 5);
-  for (const item of ozonItemsThatsDyna.slice(0, 5)) {
+  for (const item of ozonItemsThatsDyna) {
     const dynaItem = await getDynaItem(item.offer_id);
     if (dynaItem.result === 'OK') {
       io.emit('dynaGet', dynaItem.product[0]);
@@ -215,7 +215,8 @@ app.post('/api/update/apidnt', async (req, res) => {
 function updatePrice(dynaList){
   const prices = dynaList.map(i => ({
     offer_id: i.ozon.offer_id,
-    price: i.dyna.price_marketplace.toString()
+    price: i.dyna.price_marketplace.toString(),
+    old_price: (i.dyna.price_marketplace +  (i.dyna.price_marketplace * 0.05)).toString()
   }));
   const requestsCount = Math.ceil(prices.length / 100);
   for (let i = 0; i < requestsCount; i++) {
