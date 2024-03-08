@@ -212,11 +212,38 @@ app.post('/api/update/apidnt', async (req, res) => {
   }));
 });
 
+function updatePrice(dynaList){
+  const prices = dynaList.map(i => ({
+    offer_id: i.ozon.offer_id,
+    price: i.dyna.price_marketplace.toString()
+  }));
+  const requestsCount = Math.ceil(prices.length / 100);
+  for (let i = 0; i < requestsCount; i++) {
+    const timeoutId = setTimeout(async () => {
+      console.log('on it');
+      const result = await axios.post('https://api-seller.ozon.ru/v1/product/import/prices', {
+        prices: prices.slice(i * 100, (i + 1) * 100),
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Client-Id': OZON_CLIENT_ID,
+          'Api-Key': OZON_API_KEY
+        }
+      });
+      console.log(result.data)
+      console.log('Ошибки', result.data.result.map(i => i.errors).filter(i => i.length > 0))
+      console.log(i === requestsCount - 1 ? 'DONE' : `not done ${i} of ${requestsCount - 1}`);
+      io.emit('ozonUpdate', result.data);
+      return result.data;
+    }, i * 126000);
+    intervalId.push(timeoutId);
+  }
+}
+
 app.get('/api/update/price/apidnt', async (req, res) => {
   const ozonList = await getOzonList();
   const dynaList = await getDynaList(ozonList);
-  const ozonWarehouses = await getOzonWarehouses();
-  res.send(dynaList);
+  res.send(updatePrice(dynaList));
   // res.send(postStocks(ozonWarehouses, dynaList, {
   //   getWarehouse: (ozonWarehouses) => ozonWarehouses.dynaton.warehouse_id,
   //   getStocks: (i) => i.dyna.stock_express,
