@@ -235,7 +235,7 @@ function updatePrice(dynaList) {
       const errors = result.data.result.map(i => i.errors).filter(i => i.length > 0);
       if (errors.length > 0) {
         console.log('Ошибки', errors);
-        io.emit('ozonPostError', errors);
+        io.emit('ozonPostError', {errors: errors});
       }
       console.log(i === requestsCount - 1 ? 'DONE' : `not done ${i} of ${requestsCount - 1}`);
       io.emit('ozonUpdate', result.data);

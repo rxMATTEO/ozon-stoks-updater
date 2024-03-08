@@ -27,6 +27,12 @@ async function updateDynatonList() {
   })).data;
 }
 
+async function updateDynatonPrices() {
+  return (await axios.post(`${apiUrl}/update/price/apidnt`, {
+    ozonList: ozonItems.value
+  })).data;
+}
+
 const socket: Socket = io('http://localhost:3001');
 socket.emit('connection');
 socket.on('ozonUpdate', ({result}) => {
@@ -35,7 +41,21 @@ socket.on('ozonUpdate', ({result}) => {
 });
 
 socket.on('dynaGet', ({product_id, stock_express}) => {
-  toast.add({severity: 'success', summary: 'Успех!', detail: `Товар ${product_id} в количестве ${stock_express} шт. успешно подтянулся из Динатона`, life: 3000});
+  toast.add({
+    severity: 'success',
+    summary: 'Успех!',
+    detail: `Товар ${product_id} в количестве ${stock_express} шт. успешно подтянулся из Динатона`,
+    life: 3000
+  });
+});
+
+socket.on('ozonPostError', ({errors}) => {
+  toast.add({
+    severity: 'error',
+    summary: 'Ошибка!',
+    detail: errors,
+    life: 3000
+  });
 });
 
 const columns = computed(() => {
@@ -56,10 +76,10 @@ const rowsPerPage = computed(() => {
 });
 
 const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+  global: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
 });
 
-const buttons = [
+const updateStocksButtons = [
   {
     label: 'Обновить остатки LTM',
     command: () => {
@@ -72,15 +92,29 @@ const buttons = [
       updateDynatonList();
     }
   },
+];
+
+const updatePriceButtons = [
+  {
+    label: 'Обновить цены Dynaton',
+    command: () => {
+      updateDynatonPrices();
+    }
+  },
 ]
 </script>
 
 <template>
-  <Toast />
+  <Toast/>
   <div class="p-2" v-cloak>
     <div class="flex justify-content-between align-items-center">
       <Button icon="pi pi-cloud-download" label="Получить список товаров" @click="getOzonList"></Button>
-      <SplitButton :disabled="!ozonItems.length" icon="pi pi-cloud-upload" label="Обновить остатки у поставщика" :model="buttons"></SplitButton>
+      <div class="flex gap-3">
+        <SplitButton :disabled="!ozonItems.length" severity="info" icon="pi pi-cloud-upload" label="Обновить цены у поставщика"
+                     :model="updatePriceButtons"></SplitButton>
+        <SplitButton :disabled="!ozonItems.length" icon="pi pi-cloud-upload" label="Обновить остатки у поставщика"
+                     :model="updateStocksButtons"></SplitButton>
+      </div>
     </div>
     <div class="mt-3">
       <DataTable v-model:filters="filters" :value="ozonItems" selectionMode="single" paginator
@@ -88,7 +122,7 @@ const buttons = [
                  removableSort showGridlines filterDisplay="row">
         <template #header>
           <div class="flex justify-content-end">
-              <InputText v-model="filters['global'].value" placeholder="Поиск по артикулу" />
+            <InputText v-model="filters['global'].value" placeholder="Поиск по артикулу"/>
           </div>
         </template>
         <Column v-for="[k,{header, field}] in Object.entries(columns)" :header="header" :field="field" sortable
