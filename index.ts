@@ -203,7 +203,7 @@ app.post('/api/update/apidnt', async (req, res) => {
   // const dynaCat = await findOzonCategory(categories, items.product[0]);
   // const items = await fetchDynatoneItems();
   // const postedItems = await postOzonItems(items.product);
-  const { ozonList } = req.body;
+  const {ozonList} = req.body;
   const dynaList = await getDynaList(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
   res.send(postStocks(ozonWarehouses, dynaList, {
@@ -212,11 +212,11 @@ app.post('/api/update/apidnt', async (req, res) => {
   }));
 });
 
-function updatePrice(dynaList){
+function updatePrice(dynaList) {
   const prices = dynaList.map(i => ({
     offer_id: i.ozon.offer_id,
     price: i.dyna.price_marketplace.toString(),
-    old_price: (i.dyna.price_marketplace +  (i.dyna.price_marketplace * 0.05)).toString()
+    old_price: (i.dyna.price_marketplace + (i.dyna.price_marketplace * 0.05)).toString()
   }));
   const requestsCount = Math.ceil(prices.length / 100);
   for (let i = 0; i < requestsCount; i++) {
@@ -231,8 +231,12 @@ function updatePrice(dynaList){
           'Api-Key': OZON_API_KEY
         }
       });
-      console.log(result.data)
-      console.log('Ошибки', result.data.result.map(i => i.errors).filter(i => i.length > 0))
+      console.log(result.data);
+      const errors = result.data.result.map(i => i.errors).filter(i => i.length > 0);
+      if (errors.length > 0) {
+        console.log('Ошибки', errors);
+        io.emit('ozonPostError', errors);
+      }
       console.log(i === requestsCount - 1 ? 'DONE' : `not done ${i} of ${requestsCount - 1}`);
       io.emit('ozonUpdate', result.data);
       return result.data;
@@ -242,7 +246,7 @@ function updatePrice(dynaList){
 }
 
 app.post('/api/update/price/apidnt', async (req, res) => {
-  const { ozonList } = req.body;
+  const {ozonList} = req.body;
   const dynaList = await getDynaList(ozonList);
   res.send(updatePrice(dynaList));
   // res.send(postStocks(ozonWarehouses, dynaList, {
