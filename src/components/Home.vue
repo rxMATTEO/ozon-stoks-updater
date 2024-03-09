@@ -40,11 +40,11 @@ socket.on('ozonUpdate', ({result}) => {
   toast.add({severity: 'success', summary: 'Успех!', detail: `Обновлено ${result.length} записей`});
 });
 
-socket.on('dynaGet', ({product_id, stock_express}) => {
+socket.on('dynaGet', ({product_id, stock_express, price_marketplace}) => {
   toast.add({
     severity: 'success',
     summary: 'Успех!',
-    detail: `Товар ${product_id} в количестве ${stock_express} шт. успешно подтянулся из Динатона`,
+    detail: `Товар ${product_id} в количестве ${stock_express} шт., ценой ${Intl.NumberFormat('ru-RU').format(price_marketplace)} руб. успешно подтянулся из Динатона`,
     life: 3000
   });
 });
@@ -82,14 +82,18 @@ const filters = ref({
 const updateStocksButtons = [
   {
     label: 'Обновить остатки LTM',
-    command: () => {
-      updateLtmList();
+    disabled: false,
+    command() {
+      updateStocksButtons[0].disabled = true;
+      updateLtmList().then(() => updateStocksButtons[0].disabled = false);
     }
   },
   {
+    disabled: false,
     label: 'Обновить остатки Dynaton',
     command: () => {
-      updateDynatonList();
+      updateStocksButtons[1].disabled = true;
+      updateDynatonList().then(() => updateStocksButtons[1].disabled = false);
     }
   },
 ];
@@ -97,8 +101,10 @@ const updateStocksButtons = [
 const updatePriceButtons = [
   {
     label: 'Обновить цены Dynaton',
+    disabled: false,
     command: () => {
-      updateDynatonPrices();
+      updatePriceButtons[0].disabled = true;
+      updateDynatonPrices().then(() => updatePriceButtons[0].disabled = false);
     }
   },
 ]
@@ -148,5 +154,9 @@ const updatePriceButtons = [
 <style>
 [v-cloak] {
   display: none;
+}
+
+.p-toast {
+  top: 220px !important;
 }
 </style>
