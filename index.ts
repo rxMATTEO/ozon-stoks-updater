@@ -28,11 +28,19 @@ app.use(cors());
 app.use(express.static('dist'));
 app.use(express.json({limit: '50mb'}));
 
-const ltmItems = async (page) => await axios.get(`https://ltm-music.ru/api/product/?limit=500&page=${page}`, {
-  headers: {
-    Authorization: LTM_API_KEY
-  }
-});
+const ltmItems = async (page) => {
+  const result = await fetch(`https://ltm-music.ru/api/product/?limit=500&page=${page}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json, text/plain, */*',
+      Authorization: LTM_API_KEY,
+      url: `https://ltm-music.ru/api/product/?limit=500&page=${page}`,
+      'Accept-Encoding': 'gzip, deflate, br, *',
+    }
+  });
+  const json = await result.json();
+  return { data: json };
+}
 
 const ozonListItems = async (lastId) => await axios.post('https://api-seller.ozon.ru/v2/product/list', {
   limit: 1000,
