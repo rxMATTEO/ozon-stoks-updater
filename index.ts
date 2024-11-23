@@ -7,7 +7,7 @@ const express = require('express');
 const cors = require("cors");
 const app = express();
 const axios = require('axios');
-const {OZON_API_KEY, OZON_CLIENT_ID, LTM_API_KEY, DYNATON_API_KEY} = require('dotenv').config().parsed;
+const {OZON_OFFER_SHOP_API_KEY, OZON_MUSIC_SHOP_API_KEY ,OZON_OFFER_SHOP_CLIENT_ID, LTM_API_KEY, DYNATON_API_KEY} = require('dotenv').config().parsed;
 const http = require('http');
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -48,8 +48,8 @@ const ozonListItems = async (lastId) => await axios.post('https://api-seller.ozo
 }, {
   headers: {
     'Content-Type': 'application/json',
-    'Client-Id': OZON_CLIENT_ID,
-    'Api-Key': OZON_API_KEY
+    'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
+    'Api-Key': OZON_OFFER_SHOP_API_KEY
   },
 });
 
@@ -95,8 +95,8 @@ async function getOzonWarehouses() {
   const ozonWarehouses = (await axios.post('https://api-seller.ozon.ru/v1/warehouse/list', {}, {
     headers: {
       'Content-Type': 'application/json',
-      'Client-Id': OZON_CLIENT_ID,
-      'Api-Key': OZON_API_KEY
+      'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
+      'Api-Key': OZON_OFFER_SHOP_API_KEY
     }
   })).data.result;
 
@@ -105,6 +105,7 @@ async function getOzonWarehouses() {
     nsb: ozonWarehouses.find(i => i.name === 'Новосибирск_ПВЗ'),
     dynaton: ozonWarehouses.find(i => i.name === 'Динатон')
   }
+  console.log(ozonWarehouses)
   return warehousesHuman;
 }
 
@@ -143,8 +144,8 @@ async function postStocks(ozonWarehouses, bothSidesArray,
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Client-Id': OZON_CLIENT_ID,
-          'Api-Key': OZON_API_KEY
+          'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
+          'Api-Key': OZON_OFFER_SHOP_API_KEY
         }
       });
       console.log(result.data)
@@ -235,8 +236,8 @@ function updatePrice(dynaList) {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Client-Id': OZON_CLIENT_ID,
-          'Api-Key': OZON_API_KEY
+          'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
+          'Api-Key': OZON_OFFER_SHOP_API_KEY
         }
       });
       console.log(result.data);
