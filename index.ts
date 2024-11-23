@@ -103,7 +103,7 @@ async function getOzonWarehouses() {
   const warehousesHuman = {
     msk: ozonWarehouses.find(i => i.name === 'Спасское_ПВЗ'),
     nsb: ozonWarehouses.find(i => i.name === 'Новосибирск_ПВЗ'),
-    dynaton: ozonWarehouses.find(i => i.name === 'Динатон')
+    dynaton: ozonWarehouses.find(i => i.name === 'Дубликат_Спасское_ПВЗ')
   }
   return warehousesHuman;
 }
