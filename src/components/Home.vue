@@ -11,18 +11,14 @@ const apiUrl = inject('apiUrl');
 const ozonItems = ref([]);
 const updatedOzonItems = ref([]);
 
-async function getOzonList() {
-  ozonItems.value = (await axios.get(`${apiUrl}/ozon-list`)).data;
-}
-
 async function updateLtmList() {
   return (await axios.post(`${apiUrl}/update/ltm`, {
     ozonList: ozonItems.value
   })).data;
 }
 
-async function updateDynatonList() {
-  return (await axios.post(`${apiUrl}/update/apidnt`, {
+async function updateTarbokList() {
+  return (await axios.post(`${apiUrl}/update/tarbok`, {
     ozonList: ozonItems.value
   })).data;
 }
@@ -90,31 +86,49 @@ const updateStocksButtons = [
   },
   {
     disabled: false,
-    label: 'Обновить остатки Dynaton',
+    label: 'Обновить остатки Tarbok',
     command: () => {
       updateStocksButtons[1].disabled = true;
-      updateDynatonList().then(() => updateStocksButtons[1].disabled = false);
+      updateTarbokList().then(() => updateStocksButtons[1].disabled = false);
     }
   },
 ];
+
+const ozonWarehousesButtons = [
+  {
+    label: 'Получить список товаров BestOfferShop',
+    disabled: false,
+    async command() {
+      ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/1`)).data;
+    }
+  },
+  {
+    disabled: false,
+    label: 'Получить список товаров BestMusicShop',
+    command: async () => {
+      ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/2`)).data;
+    }
+  },
+]
 
 const updatePriceButtons = [
   {
     label: 'Обновить цены Dynaton',
     disabled: false,
+    icon: 'pi pi-cloud-upload',
     command: () => {
       updatePriceButtons[0].disabled = true;
       updateDynatonPrices().then(() => updatePriceButtons[0].disabled = false);
     }
   },
-]
+];
 </script>
 
 <template>
   <Toast/>
   <div class="p-2" v-cloak>
     <div class="flex justify-content-between align-items-center">
-      <Button icon="pi pi-cloud-download" label="Получить список товаров" @click="getOzonList"></Button>
+      <SplitButton icon="pi pi-cloud-download" label="Получить список товаров" :model="ozonWarehousesButtons"></SplitButton>
       <div class="flex gap-3">
         <SplitButton :disabled="!ozonItems.length" severity="info" icon="pi pi-cloud-upload" label="Обновить цены у поставщика"
                      :model="updatePriceButtons"></SplitButton>

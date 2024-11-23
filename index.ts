@@ -133,7 +133,9 @@ function getExcelSheet(filePath = TARBOC_WAREHOUSE_DOCUMENT_PATH){
 async function postStocks(ozonWarehouses, bothSidesArray,
                           {
                             getStocks = (item) => item.ltm.stores.find(i => i.code === 'moscow').quantity,
-                            getWarehouse = (ozonWarehouses) => ozonWarehouses.msk.warehouse_id
+                            getWarehouse = (ozonWarehouses) => ozonWarehouses.msk.warehouse_id,
+                            clientId = OZON_OFFER_SHOP_CLIENT_ID,
+                            apiKey = OZON_OFFER_SHOP_API_KEY,
                           } = {}) {
   // POST https://api-seller.ozon.ru/v2/products/stocks
   const stocks = bothSidesArray.map(i => {
@@ -155,7 +157,10 @@ async function postStocks(ozonWarehouses, bothSidesArray,
       i.stock = 100;
     }
     return i;
-  })
+  });
+
+  console.log(stocks);
+  debugger;
   const requestsCount = Math.ceil(stocks.length / 100);
   for (let i = 0; i < requestsCount; i++) {
     const timeoutId = setTimeout(async () => {
@@ -165,8 +170,8 @@ async function postStocks(ozonWarehouses, bothSidesArray,
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
-          'Api-Key': OZON_OFFER_SHOP_API_KEY
+          'Client-Id': clientId,
+          'Api-Key': apiKey
         }
       });
       console.log(result.data)
@@ -201,15 +206,20 @@ async function matchBothSidesTarbok(ozonList) {
     if (ltmBuyArt) {
       result.push({
         ozon: ltmBuyArt,
-        ltm: resultElement,
+        tarbok: resultElement,
       });
     }
   }
   return result;
 }
 
-app.get('/api/ozon-list', async (req, res) => {
+app.get('/api/ozon-list/1', async (req, res) => {
   const ozonList = await getOzonList();
+  res.send(ozonList);
+});
+
+app.get('/api/ozon-list/2', async (req, res) => {
+  const ozonList = await getOzonList({ clientId: OZON_MUSIC_SHOP_CLIENT_ID, apiKey: OZON_MUSIC_SHOP_API_KEY });
   res.send(ozonList);
 });
 
@@ -224,10 +234,16 @@ app.post('/api/excel/read', (req, res) => {
   res.send(getExcelSheet())
 });
 
-app.post('api/update/tarbok', async (req, res) => {
+app.post('/api/update/tarbok', async (req, res) => {
   const {ozonList} = req.body;
   const bothSidesArray = await matchBothSidesTarbok(ozonList);
-  res.send(bothSidesArray)
+  const ozonWarehouses = await getOzonWarehouses({ clientId: OZON_MUSIC_SHOP_CLIENT_ID, apiKey: OZON_MUSIC_SHOP_API_KEY });
+  res.send(await postStocks(ozonWarehouses, bothSidesArray, {
+    getStocks: (item) => +item.tarbok['Доступное количество'],
+    getWarehouse: (ozonWarehouses) => ozonWarehouses.balashiha.warehouse_id,
+    clientId: OZON_MUSIC_SHOP_CLIENT_ID,
+    apiKey: OZON_MUSIC_SHOP_API_KEY
+  }));
 })
 
 async function getDynaItem(ozonId): Promise<DynaItemResponse> {
