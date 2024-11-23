@@ -316,6 +316,45 @@ function updatePrice(dynaList) {
   }
 }
 
+function updatePriceTarbok(tarbokList, {
+  clientId = OZON_OFFER_SHOP_CLIENT_ID,
+  apiKey = OZON_OFFER_SHOP_API_KEY
+}) {
+  const prices = tarbokList.map(i => {
+    const priceParsed = +i.tarbok['Розничная цена'].replaceAll(' ', '').split('.')[0].replace(/\D/g, '');
+    return {
+      offer_id: i.ozon.offer_id,
+      price: (priceParsed + (priceParsed * 0.1)).toString(),
+      old_price: (priceParsed + (priceParsed * 0.16)).toString(),
+    };
+  });
+  const requestsCount = Math.ceil(prices.length / 100);
+  for (let i = 0; i < requestsCount; i++) {
+    const timeoutId = setTimeout(async () => {
+      console.log('on it');
+      const result = await axios.post('https://api-seller.ozon.ru/v1/product/import/prices', {
+        prices: prices.slice(i * 100, (i + 1) * 100),
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Client-Id': clientId,
+          'Api-Key': apiKey
+        }
+      });
+      console.log(result.data);
+      const errors = result.data.result.map(i => i.errors).filter(i => i.length > 0);
+      if (errors.length > 0) {
+        console.log('Ошибки', errors);
+        io.emit('ozonPostError', {errors: errors});
+      }
+      console.log(i === requestsCount - 1 ? 'DONE' : `not done ${i} of ${requestsCount - 1}`);
+      io.emit('ozonUpdate', result.data);
+      return result.data;
+    }, i * 126000);
+    intervalId.push(timeoutId);
+  }
+}
+
 app.post('/api/update/price/apidnt', async (req, res) => {
   const {ozonList} = req.body;
   const dynaList = await getDynaList(ozonList);
@@ -325,6 +364,17 @@ app.post('/api/update/price/apidnt', async (req, res) => {
   //   getStocks: (i) => i.dyna.stock_express,
   // }));
 });
+
+app.post('/api/update/price/tarbok', async (req, res) => {
+  const {ozonList} = req.body;
+  const bothSidesArray = await matchBothSidesTarbok(ozonList);
+  res.send(updatePriceTarbok(bothSidesArray, { apiKey: OZON_MUSIC_SHOP_API_KEY, clientId: OZON_MUSIC_SHOP_CLIENT_ID }));
+  // res.send(postStocks(ozonWarehouses, dynaList, {
+  //   getWarehouse: (ozonWarehouses) => ozonWarehouses.dynaton.warehouse_id,
+  //   getStocks: (i) => i.dyna.stock_express,
+  // }));
+});
+
 
 app.get('*', (req, res) => {
   res.header(

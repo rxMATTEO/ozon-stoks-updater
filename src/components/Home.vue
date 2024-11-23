@@ -29,6 +29,11 @@ async function updateDynatonPrices() {
   })).data;
 }
 
+async function updateTarbokPrices() {
+  return (await axios.post(`${apiUrl}/update/price/tarbok`, {
+    ozonList: ozonItems.value
+  })).data;
+}
 const socket: Socket = io('http://localhost:3001');
 socket.emit('connection');
 socket.on('ozonUpdate', ({result}) => {
@@ -97,6 +102,7 @@ const updateStocksButtons = [
 const ozonWarehousesButtons = [
   {
     label: 'Получить список товаров BestOfferShop',
+    icon: 'pi pi-cloud-upload',
     disabled: false,
     async command() {
       ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/1`)).data;
@@ -105,6 +111,7 @@ const ozonWarehousesButtons = [
   {
     disabled: false,
     label: 'Получить список товаров BestMusicShop',
+    icon: 'pi pi-cloud-upload',
     command: async () => {
       ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/2`)).data;
     }
@@ -115,12 +122,19 @@ const updatePriceButtons = [
   {
     label: 'Обновить цены Dynaton',
     disabled: false,
-    icon: 'pi pi-cloud-upload',
     command: () => {
       updatePriceButtons[0].disabled = true;
       updateDynatonPrices().then(() => updatePriceButtons[0].disabled = false);
     }
   },
+  {
+    label: 'Обновить цены Tarbok',
+    disabled: false,
+    command: () => {
+      updatePriceButtons[1].disabled = true;
+      updateTarbokPrices().then(() => updatePriceButtons[1].disabled = false);
+    }
+  }
 ];
 </script>
 
