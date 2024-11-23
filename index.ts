@@ -42,14 +42,14 @@ const ltmItems = async (page) => {
   return { data: json };
 }
 
-const ozonListItems = async (lastId) => await axios.post('https://api-seller.ozon.ru/v2/product/list', {
+const ozonListItems = async (lastId, { clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON_OFFER_SHOP_API_KEY } = {}) => await axios.post('https://api-seller.ozon.ru/v2/product/list', {
   limit: 1000,
   last_id: lastId
 }, {
   headers: {
     'Content-Type': 'application/json',
-    'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
-    'Api-Key': OZON_OFFER_SHOP_API_KEY
+    'Client-Id': clientId,
+    'Api-Key': apiKey
   },
 });
 
@@ -90,20 +90,21 @@ async function getOzonList() {
   return list;
 }
 
-async function getOzonWarehouses() {
+async function getOzonWarehouses({ clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON_OFFER_SHOP_API_KEY } = {}) {
 //   POST https://api-seller.ozon.ru/v1/warehouse/list
   const ozonWarehouses = (await axios.post('https://api-seller.ozon.ru/v1/warehouse/list', {}, {
     headers: {
       'Content-Type': 'application/json',
-      'Client-Id': OZON_OFFER_SHOP_CLIENT_ID,
-      'Api-Key': OZON_OFFER_SHOP_API_KEY
+      'Client-Id': clientId,
+      'Api-Key': apiKey
     }
   })).data.result;
 
   const warehousesHuman = {
     msk: ozonWarehouses.find(i => i.name === 'Дубликат_Спасское_ПВЗ'),
     nsb: ozonWarehouses.find(i => i.name === 'Новосибирск_ПВЗ'),
-    dynaton: ozonWarehouses.find(i => i.name === 'Динатон')
+    dynaton: ozonWarehouses.find(i => i.name === 'Динатон'),
+    balashiha: ozonWarehouses.find(i => i.name === 'Балашиха'),
   }
   console.log(ozonWarehouses)
   return warehousesHuman;
