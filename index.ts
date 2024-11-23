@@ -2,12 +2,16 @@ import {Category, DynaItem, DynaItemResponse, ProductDyna} from "./types";
 import {Server} from "socket.io";
 import {clearTimeout} from "node:timers";
 import * as path from "node:path";
+import * as fs from "node:fs";
+import XLSX from 'xlsx'
 
 const express = require('express');
 const cors = require("cors");
 const app = express();
 const axios = require('axios');
-const {OZON_OFFER_SHOP_API_KEY, OZON_MUSIC_SHOP_API_KEY ,OZON_OFFER_SHOP_CLIENT_ID, LTM_API_KEY, DYNATON_API_KEY} = require('dotenv').config().parsed;
+const {OZON_OFFER_SHOP_API_KEY, LTM_API_KEY, TARBOC_WAREHOUSE_DOCUMENT_PATH,
+  OZON_MUSIC_SHOP_CLIENT_ID,
+  OZON_MUSIC_SHOP_API_KEY ,OZON_OFFER_SHOP_CLIENT_ID, DYNATON_API_KEY} = require('dotenv').config().parsed;
 const http = require('http');
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -76,14 +80,14 @@ async function findLtmBuyArt(art, list) {
   // return list.find(el => el.offers.find(offer => offer.bar_code == art));
 }
 
-async function getOzonList() {
-  const ozonList = await ozonListItems(null);
+async function getOzonList({ clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON_OFFER_SHOP_API_KEY } = {}) {
+  const ozonList = await ozonListItems(null, { clientId, apiKey });
   const list = [...ozonList.data.result.items];
   const limit = ozonList.data.result.total;
   const pages = Math.ceil(limit / 1000);
   let lastId = ozonList.data.result.last_id;
   for (let i = 2; i <= pages; i++) {
-    const newList = await ozonListItems(lastId);
+    const newList = await ozonListItems(lastId, { clientId, apiKey });
     lastId = ozonList.data.result.last_id;
     list.push(...newList.data.result.items)
   }
@@ -106,8 +110,24 @@ async function getOzonWarehouses({ clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey 
     dynaton: ozonWarehouses.find(i => i.name === 'Динатон'),
     balashiha: ozonWarehouses.find(i => i.name === 'Балашиха'),
   }
-  console.log(ozonWarehouses)
   return warehousesHuman;
+}
+
+function getExcelSheet(filePath = TARBOC_WAREHOUSE_DOCUMENT_PATH){
+  const fileBuffer = fs.readFileSync(filePath);
+
+// Parse the file
+  const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+
+// Get the first sheet name
+  const sheetName = workbook.SheetNames[0];
+
+// Get the first sheet
+  const sheet = workbook.Sheets[sheetName];
+
+// Convert sheet to JSON
+  const data = XLSX.utils.sheet_to_json(sheet);
+  return data;
 }
 
 async function postStocks(ozonWarehouses, bothSidesArray,
@@ -173,6 +193,21 @@ async function matchBothSides(ozonList) {
   return result;
 }
 
+async function matchBothSidesTarbok(ozonList) {
+  const result = [];
+  const excelList = getExcelSheet();
+  for (const resultElement of excelList.filter(i => i['Артикул'])) {
+    const ltmBuyArt = ozonList.find(i => i.offer_id === resultElement['Артикул']);
+    if (ltmBuyArt) {
+      result.push({
+        ozon: ltmBuyArt,
+        ltm: resultElement,
+      });
+    }
+  }
+  return result;
+}
+
 app.get('/api/ozon-list', async (req, res) => {
   const ozonList = await getOzonList();
   res.send(ozonList);
@@ -184,6 +219,16 @@ app.post('/api/update/ltm', async (req, res) => {
   const ozonWarehouses = await getOzonWarehouses();
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
 });
+
+app.post('/api/excel/read', (req, res) => {
+  res.send(getExcelSheet())
+});
+
+app.post('api/update/tarbok', async (req, res) => {
+  const {ozonList} = req.body;
+  const bothSidesArray = await matchBothSidesTarbok(ozonList);
+  res.send(bothSidesArray)
+})
 
 async function getDynaItem(ozonId): Promise<DynaItemResponse> {
   return (await axios.get(`https://apidnt.ru/v2/product/list?product_id=DNT_${ozonId}&key=${DYNATON_API_KEY}`)).data;
