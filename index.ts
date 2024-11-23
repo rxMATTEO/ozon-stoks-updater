@@ -101,9 +101,9 @@ async function getOzonWarehouses() {
   })).data.result;
 
   const warehousesHuman = {
-    msk: ozonWarehouses.find(i => i.name === 'Спасское_ПВЗ'),
+    msk: ozonWarehouses.find(i => i.name === 'Дубликат_Спасское_ПВЗ'),
     nsb: ozonWarehouses.find(i => i.name === 'Новосибирск_ПВЗ'),
-    dynaton: ozonWarehouses.find(i => i.name === 'Дубликат_Спасское_ПВЗ')
+    dynaton: ozonWarehouses.find(i => i.name === 'Динатон')
   }
   return warehousesHuman;
 }
