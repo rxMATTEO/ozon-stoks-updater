@@ -159,8 +159,6 @@ async function postStocks(ozonWarehouses, bothSidesArray,
     return i;
   });
 
-  console.log(stocks);
-  debugger;
   const requestsCount = Math.ceil(stocks.length / 100);
   for (let i = 0; i < requestsCount; i++) {
     const timeoutId = setTimeout(async () => {
