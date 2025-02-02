@@ -227,10 +227,8 @@ app.get('/api/ozon-list/2', async (req, res) => {
 app.post('/api/update/ltm', async (req, res) => {
   const {ozonList} = req.body;
   const bothSidesArray = await matchBothSides(ozonList);
-  console.log(bothSidesArray)
-  debugger;
-  // const ozonWarehouses = await getOzonWarehouses();
-  // res.send(await postStocks(ozonWarehouses, bothSidesArray));
+  const ozonWarehouses = await getOzonWarehouses();
+  res.send(await postStocks(ozonWarehouses, bothSidesArray));
 });
 
 app.post('/api/excel/read', (req, res) => {
@@ -413,6 +411,7 @@ app.post('/api/update/price/tarbok', async (req, res) => {
 
 app.post('/api/update/price/ltm', async (req, res) => {
   const {ozonList, percent} = req.body;
+  debugger;
   const bothSidesArray = await matchBothSides(ozonList);
   res.send(
     updatePriceLtm(bothSidesArray, (+percent) / 100)
