@@ -192,14 +192,20 @@ watch(percentMultiplierLtm, (v) => {
         <Column v-for="[k,{header, field}] in Object.entries(columns)" :header="header" :field="field" sortable
                 :key="k">
           <template #body="{data}">
-            <div :class="{'text-green-500': updatedOzonItems.some(i => i.product_id === data.product_id)}">
+            <div          :style="{
+                  'color': updatedOzonItems.some(i => i.product_id === data.product_id) ? 'var(--p-green-500)' : 'initial'
+                }">
               {{ data[field] }}
             </div>
           </template>
         </Column>
         <Column header="Обновлено">
           <template #body={data}>
-            <div :class="{'text-green-500': updatedOzonItems.some(i => i.product_id === data.product_id)}">
+            <div
+                :style="{
+                  'color': updatedOzonItems.some(i => i.product_id === data.product_id) ? 'var(--p-green-500)' : 'initial'
+                }"
+            >
               {{ updatedOzonItems.some(i => i.product_id === data.product_id) ? 'Да' : 'Нет' }}
             </div>
           </template>
