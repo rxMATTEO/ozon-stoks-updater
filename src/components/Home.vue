@@ -40,6 +40,7 @@ async function updateLtmPrices() {
   return (await axios.post(`${apiUrl}/update/price/ltm`, {
     ozonList: ozonItems.value,
     percent: percentLtm.value,
+    priceOldPercent: percentMultiplierLtm.value,
   })).data;
 }
 
@@ -154,10 +155,15 @@ const updatePriceButtons = [
   }
 ];
 
-const cookies = useCookies(['percent-ltm']);
-const percentLtm = ref(cookies.get('percent-ltm') || 5);
+const cookies = useCookies(['percent-ltm', 'percent-multiplier-ltm']);
+const percentLtm = ref(cookies.get('percent-ltm') || 7);
 watch(percentLtm, (v) => {
   cookies.set('percent-ltm', v);
+});
+
+const percentMultiplierLtm = ref(cookies.get('percent-multiplier-ltm') || 10);
+watch(percentMultiplierLtm, (v) => {
+  cookies.set('percent-multiplier-ltm', v);
 })
 </script>
 
@@ -171,7 +177,7 @@ watch(percentLtm, (v) => {
                      :model="updatePriceButtons"></SplitButton>
         <SplitButton :disabled="!ozonItems.length" icon="pi pi-cloud-upload" label="Обновить остатки у поставщика"
                      :model="updateStocksButtons"></SplitButton>
-        <SettingsMenu v-model:percent-ltm="percentLtm" />
+        <SettingsMenu v-model:percent-ltm="percentLtm" v-model:percent-multiplier-ltm="percentMultiplierLtm" />
       </div>
     </div>
     <div class="mt-3">

@@ -317,11 +317,11 @@ function updatePrice(dynaList) {
   }
 }
 
-function updatePriceLtm(dynaList, percent) {
+function updatePriceLtm(dynaList, percent, priceOldPercent) {
   const prices = dynaList.map(i => ({
     offer_id: i.ozon.offer_id,
     price: (i.ltm.prices.retail + (i.ltm.prices.retail * percent)).toFixed(0).toString(),
-    old_price: ((i.ltm.prices.retail + (i.ltm.prices.retail * percent)) * 1.10).toFixed(0).toString()
+    old_price: ((i.ltm.prices.retail + (i.ltm.prices.retail * percent)) * priceOldPercent).toFixed(0).toString()
   }));
   const requestsCount = Math.ceil(prices.length / 100);
   for (let i = 0; i < requestsCount; i++) {
@@ -410,11 +410,13 @@ app.post('/api/update/price/tarbok', async (req, res) => {
 });
 
 app.post('/api/update/price/ltm', async (req, res) => {
-  const {ozonList, percent} = req.body;
-  debugger;
+  const {ozonList, percent, priceOldPercent} = req.body;
+
+  const basePercent = (+percent) / 100;
+  const percentForPriceOld = ((+priceOldPercent) / 100) + 1;
   const bothSidesArray = await matchBothSides(ozonList);
   res.send(
-    updatePriceLtm(bothSidesArray, (+percent) / 100)
+    updatePriceLtm(bothSidesArray, basePercent, percentForPriceOld)
   );
   // res.send(postStocks(ozonWarehouses, dynaList, {
   //   getWarehouse: (ozonWarehouses) => ozonWarehouses.dynaton.warehouse_id,
