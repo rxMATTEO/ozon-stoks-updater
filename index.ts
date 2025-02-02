@@ -227,8 +227,10 @@ app.get('/api/ozon-list/2', async (req, res) => {
 app.post('/api/update/ltm', async (req, res) => {
   const {ozonList} = req.body;
   const bothSidesArray = await matchBothSides(ozonList);
-  const ozonWarehouses = await getOzonWarehouses();
-  res.send(await postStocks(ozonWarehouses, bothSidesArray));
+  console.log(bothSidesArray)
+  debugger;
+  // const ozonWarehouses = await getOzonWarehouses();
+  // res.send(await postStocks(ozonWarehouses, bothSidesArray));
 });
 
 app.post('/api/excel/read', (req, res) => {

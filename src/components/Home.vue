@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, warn, watch} from "vue";
 import axios from "axios";
 import {Socket, io} from "socket.io-client";
 import {useToast} from "primevue/usetoast";
-import {FilterMatchMode} from "primevue/api";
+import SettingsMenu from "./SettingsMenu.vue";
+import { useCookies } from '@vueuse/integrations/useCookies'
 
 const toast = useToast();
 
@@ -77,7 +78,7 @@ const rowsPerPage = computed(() => {
 });
 
 const filters = ref({
-  global: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+  global: {value: null, matchMode: 'startsWith'},
 });
 
 const updateStocksButtons = [
@@ -136,6 +137,12 @@ const updatePriceButtons = [
     }
   }
 ];
+
+const cookies = useCookies(['percent-ltm']);
+const percentLtm = ref(cookies.get('percent-ltm') || 5);
+watch(percentLtm, (v) => {
+  cookies.set('percent-ltm', v);
+})
 </script>
 
 <template>
@@ -148,6 +155,7 @@ const updatePriceButtons = [
                      :model="updatePriceButtons"></SplitButton>
         <SplitButton :disabled="!ozonItems.length" icon="pi pi-cloud-upload" label="Обновить остатки у поставщика"
                      :model="updateStocksButtons"></SplitButton>
+        <SettingsMenu v-model:percent-ltm="percentLtm" />
       </div>
     </div>
     <div class="mt-3">
