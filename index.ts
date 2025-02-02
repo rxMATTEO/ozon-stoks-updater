@@ -46,9 +46,12 @@ const ltmItems = async (page) => {
   return { data: json };
 }
 
-const ozonListItems = async (lastId, { clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON_OFFER_SHOP_API_KEY } = {}) => await axios.post('https://api-seller.ozon.ru/v2/product/list', {
+const ozonListItems = async (lastId, { clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON_OFFER_SHOP_API_KEY } = {}) => await axios.post('https://api-seller.ozon.ru/v3/product/list', {
   limit: 1000,
-  last_id: lastId
+  last_id: lastId,
+  filter: {
+    visibility: 'ALL',
+  }
 }, {
   headers: {
     'Content-Type': 'application/json',
