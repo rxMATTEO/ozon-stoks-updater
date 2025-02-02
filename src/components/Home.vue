@@ -35,6 +35,14 @@ async function updateTarbokPrices() {
     ozonList: ozonItems.value
   })).data;
 }
+
+async function updateLtmPrices() {
+  return (await axios.post(`${apiUrl}/update/price/ltm`, {
+    ozonList: ozonItems.value,
+    percent: percentLtm.value,
+  })).data;
+}
+
 const socket: Socket = io('http://localhost:3001');
 socket.emit('connection');
 socket.on('ozonUpdate', ({result}) => {
@@ -134,6 +142,14 @@ const updatePriceButtons = [
     command: () => {
       updatePriceButtons[1].disabled = true;
       updateTarbokPrices().then(() => updatePriceButtons[1].disabled = false);
+    }
+  },
+  {
+    label: 'Обновить цены LTM',
+    disabled: false,
+    command: () => {
+      updatePriceButtons[2].disabled = true;
+      updateLtmPrices().then(() => updatePriceButtons[2].disabled = false);
     }
   }
 ];
