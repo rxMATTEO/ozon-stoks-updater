@@ -135,7 +135,7 @@ function getExcelSheet(filePath = TARBOC_WAREHOUSE_DOCUMENT_PATH){
 
 async function postStocks(ozonWarehouses, bothSidesArray,
                           {
-                            getStocks = (item) => item.ltm.stores.find(i => i.code === 'moscow').quantity,
+                            getStocks = (item) => item.ltm.stores.find(i => i.code === 'moscow-central').quantity,
                             getWarehouse = (ozonWarehouses) => ozonWarehouses.msk.warehouse_id,
                             clientId = OZON_OFFER_SHOP_CLIENT_ID,
                             apiKey = OZON_OFFER_SHOP_API_KEY,
