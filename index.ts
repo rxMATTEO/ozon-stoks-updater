@@ -10,7 +10,7 @@ const cors = require("cors");
 const app = express();
 const axios = require('axios');
 const {OZON_OFFER_SHOP_API_KEY, LTM_API_KEY, TARBOC_WAREHOUSE_DOCUMENT_PATH,
-  OZON_MUSIC_SHOP_CLIENT_ID,
+  OZON_MUSIC_SHOP_CLIENT_ID, OZON_OFFER_SHOP79_API_KEY, OZON_OFFER_SHOP79_CLIENT_ID,
   OZON_MUSIC_SHOP_API_KEY ,OZON_OFFER_SHOP_CLIENT_ID, DYNATON_API_KEY} = require('dotenv').config().parsed;
 const http = require('http');
 const server = http.createServer(app);
@@ -112,6 +112,7 @@ async function getOzonWarehouses({ clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey 
     nsb: ozonWarehouses.find(i => i.name === 'Новосибирск_ПВЗ'),
     dynaton: ozonWarehouses.find(i => i.name === 'Динатон'),
     balashiha: ozonWarehouses.find(i => i.name === 'Балашиха'),
+    domodedovo  : ozonWarehouses.find(i => i.name === 'Домодедово'),
   }
   return warehousesHuman;
 }
@@ -224,11 +225,28 @@ app.get('/api/ozon-list/2', async (req, res) => {
   res.send(ozonList);
 });
 
-app.post('/api/update/ltm', async (req, res) => {
+app.get('/api/ozon-list/3', async (req, res) => {
+  const ozonList = await getOzonList({ clientId: OZON_OFFER_SHOP79_CLIENT_ID, apiKey: OZON_OFFER_SHOP79_API_KEY });
+  res.send(ozonList);
+});
+
+app.post('/api/update/ltm/1', async (req, res) => {
   const {ozonList} = req.body;
   const bothSidesArray = await matchBothSides(ozonList);
   const ozonWarehouses = await getOzonWarehouses();
   res.send(await postStocks(ozonWarehouses, bothSidesArray));
+});
+
+app.post('/api/update/ltm/3', async (req, res) => {
+  const {ozonList} = req.body;
+  const bothSidesArray = await matchBothSides(ozonList);
+  const ozonWarehouses = await getOzonWarehouses({ clientId: OZON_OFFER_SHOP79_CLIENT_ID, apiKey: OZON_OFFER_SHOP79_API_KEY });
+  res.send(await postStocks(ozonWarehouses, bothSidesArray, {
+    getStocks: (item) => item.ltm.stores.find(i => i.code === 'moscow-central').quantity,
+    getWarehouse: (ozonWarehouses) => ozonWarehouses.domodedovo.warehouse_id,
+    clientId: OZON_OFFER_SHOP79_CLIENT_ID,
+    apiKey: OZON_OFFER_SHOP79_API_KEY,
+  }));
 });
 
 app.post('/api/excel/read', (req, res) => {
