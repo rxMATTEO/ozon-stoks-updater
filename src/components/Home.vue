@@ -111,30 +111,17 @@ const updateStocksButtons = [
   },
 ];
 
-const ozonWarehousesButtons = [
-  {
-    label: 'Получить список товаров BestOfferShop',
-    icon: 'pi pi-cloud-upload',
-    disabled: false,
-    async command() {
-      selectedSklad.value = {
-        ltm: `${apiUrl}/update/ltm/1`
+const ozonWarehousesButtons =   {
+      disabled: false,
+      label: 'Получить список товаров BestOfferShop (новый)',
+      icon: 'pi pi-cloud-upload',
+      command: async () => {
+        selectedSklad.value = {
+          ltm: `${apiUrl}/update/ltm/3`
+        }
+        ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/3`)).data;
       }
-      ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/1`)).data;
-    }
-  },
-  {
-    disabled: false,
-    label: 'Получить список товаров BestOfferShop (новый)',
-    icon: 'pi pi-cloud-upload',
-    command: async () => {
-      selectedSklad.value = {
-        ltm: `${apiUrl}/update/ltm/3`
-      }
-      ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/3`)).data;
-    }
-  },
-]
+    };
 
 const updatePriceButtons = [
   {
@@ -179,7 +166,7 @@ watch(percentMultiplierLtm, (v) => {
   <Toast/>
   <div class="p-2" v-cloak>
     <div class="flex justify-content-between align-items-center">
-      <SplitButton icon="pi pi-cloud-download" label="Получить список товаров" :model="ozonWarehousesButtons"></SplitButton>
+      <Button icon="pi pi-cloud-download" label="Получить список товаров" @click="ozonWarehousesButtons.command()"></Button>
       <div class="flex gap-3">
         <SplitButton :disabled="!ozonItems.length" severity="info" icon="pi pi-cloud-upload" label="Обновить цены у поставщика"
                      :model="updatePriceButtons"></SplitButton>
