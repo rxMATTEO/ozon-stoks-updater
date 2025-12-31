@@ -13,7 +13,7 @@ const ozonItems = ref([]);
 const updatedOzonItems = ref([]);
 
 async function updateLtmList() {
-  return (await axios.post(selectedSklad.value.ltm, {
+  return (await axios.post(`${apiUrl}/update/ltm`, {
     ozonList: ozonItems.value
   })).data;
 }
@@ -82,8 +82,6 @@ const columns = computed(() => {
   }
 });
 
-const selectedSklad = ref(null);
-
 const rowsPerPage = computed(() => {
   return [10, 20, 50];
 });
@@ -117,21 +115,15 @@ const ozonWarehousesButtons = [
     icon: 'pi pi-cloud-upload',
     disabled: false,
     async command() {
-      selectedSklad.value = {
-        ltm: `${apiUrl}/update/ltm/1`
-      }
       ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/1`)).data;
     }
   },
   {
     disabled: false,
-    label: 'Получить список товаров BestOfferShop (новый)',
+    label: 'Получить список товаров BestMusicShop',
     icon: 'pi pi-cloud-upload',
     command: async () => {
-      selectedSklad.value = {
-        ltm: `${apiUrl}/update/ltm/3`
-      }
-      ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/3`)).data;
+      ozonItems.value = (await axios.get(`${apiUrl}/ozon-list/2`)).data;
     }
   },
 ]
