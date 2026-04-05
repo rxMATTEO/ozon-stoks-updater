@@ -98,14 +98,14 @@ async function getOzonList({ clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON
 }
 
 async function getOzonWarehouses({ clientId = OZON_OFFER_SHOP_CLIENT_ID, apiKey = OZON_OFFER_SHOP_API_KEY } = {}) {
-//   POST https://api-seller.ozon.ru/v1/warehouse/list
-  const ozonWarehouses = (await axios.post('https://api-seller.ozon.ru/v1/warehouse/list', {}, {
+//   POST https://api-seller.ozon.ru/v2/warehouse/list
+  const ozonWarehouses = (await axios.post('https://api-seller.ozon.ru/v2/warehouse/list', {}, {
     headers: {
       'Content-Type': 'application/json',
       'Client-Id': clientId,
       'Api-Key': apiKey
     }
-  })).data.result;
+  })).data.warehouses;
 
   const warehousesHuman = {
     msk: ozonWarehouses.find(i => i.name === 'Дубликат_Спасское_ПВЗ'),
